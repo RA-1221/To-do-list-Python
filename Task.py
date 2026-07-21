@@ -1,7 +1,9 @@
+import json
+
 class Task:
     def __init__(self, title, is_done, Priority):
         self.title = title
-        self.is_done = False
+        self.is_done = is_done
         self.priority = Priority
 
     def displayInfo(self):
@@ -13,9 +15,11 @@ class Task:
 class TaskManager:
     def __init__(self):
         self.tasks = []
+        self.loadTask()
 
     def addTask(self, task):
         self.tasks.append(task)
+        self.saveTask()
 
     def viewTask(self):
         for task in self.tasks:
@@ -26,10 +30,12 @@ class TaskManager:
         for task in self.tasks:
             if task.title == t:
                 self.tasks.remove(task)
+                self.saveTask()
                 print("Task deleted")
                 return
 
         print("Not found")
+
 
     def editTitle(self):
         found = False
@@ -37,27 +43,32 @@ class TaskManager:
 
         for task in self.tasks:
             if task.title == t:
+
                 newTitle = input("Enter the new title: ")
                 task.title = newTitle
+                self.saveTask()
                 found = True
                 break
 
         if found == False:
             print("Not found")
+
 
     def editPriority(self):
         found = False
         p = input("What task you wanna edit? ")
 
         for task in self.tasks:
-            if task.title == p:
+            if task.priority == p:
                 newPriority = input("Enter new priority: ")
                 task.priority = newPriority
+                self.saveTask()
                 found = True
                 break
 
         if found == False:
             print("Not found")
+
 
     def done(self):
         found = False
@@ -67,11 +78,13 @@ class TaskManager:
             if task.title == d:
                 task.is_done = True
                 found = True
+                self.saveTask()
                 print("Task is done")
                 break
 
         if found == False:
             print("Not found")
+
 
     def search(self):
         found = False
@@ -85,6 +98,42 @@ class TaskManager:
 
         if found == False:
             print("Not found")
+
+
+    def saveTask(self):
+        data = []
+
+        for task in self.tasks:
+            taskData = {
+                "title": task.title,
+                "priority": task.priority,
+                "is_done": task.is_done,
+            }
+
+            data.append(taskData)
+
+        with open("tasks.json", "w") as file:
+            json.dump(data, file)
+
+
+    def loadTask(self):
+        try:
+            with open("tasks.json", "r") as file:
+                data = json.load(file)
+
+            self.tasks = []
+
+            for task in data:
+                newTask = Task(
+                    task["title"],
+                    task["is_done"],
+                    task["priority"]
+                )
+
+                self.tasks.append(newTask)
+
+        except FileNotFoundError:
+            self.tasks = []
 
 
 manager = TaskManager()
@@ -124,7 +173,7 @@ while True:
         manager.editPriority()
 
     elif choice == "6":
-        manager.deletTask()
+        manager.deleteTask()
 
     elif choice == "7":
         manager.done()
